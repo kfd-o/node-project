@@ -9,7 +9,7 @@ const PORT = process.env.S_PORT;
 server.use(express.json());
 server.use(express.urlencoded({ extended: false }));
 
-server.use('/api/visitor', visitorRoutes);
+server.use('/api/visitors', visitorRoutes);
 
 server.use(errorHandlerPageNotFound);
 server.use(errorHandler);
