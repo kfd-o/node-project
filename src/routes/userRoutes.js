@@ -5,8 +5,8 @@ import validation from '../utils/validation.js';
 const router = express();
 
 router.get('/', userController.getAllUsers);
-router.get('/:id', validation.fetchOrDeleteById, userController.getUserById);
+router.get('/:id', userController.getUserById);
 router.post('/', validation.createUser, userController.createUser);
-router.delete('/:id', validation.fetchOrDeleteById, userController.deleteUserById);
+router.delete('/:id', userController.deleteUserById);
 
 export default router;

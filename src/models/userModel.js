@@ -7,8 +7,8 @@ const User = {
     fetchById: async (id) => {
         return await conn.execute('SELECT * FROM users WHERE id = ?', [id]);
     },
-    create: async (username, email, password) => {
-        return await conn.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, password]);
+    create: async (username, password) => {
+        return await conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', [username, password]);
     },
     changePassword: async (password) => {
         return await conn.execute('UPDATE users SET password = ? WHERE id = ?', [password, id]);
