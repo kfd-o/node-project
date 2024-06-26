@@ -1,8 +1,5 @@
-const errorHandlerPageNotFound = (req, res, next) => {
-    const error = new Error();
-    error.status = 404;
-    error.message = "Page Not Found!"
-    next(error);
+const errorHandlerPageNotFound = (req, res) => {
+    return res.status(404).json({ status: 404, msg: "Page Not Found." });
 }
 
 export default errorHandlerPageNotFound;
