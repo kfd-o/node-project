@@ -26,7 +26,7 @@ const visitorController = {
                 return res.status(400).json({ status: 400, msg: "Bad Request!" });
             }
             const [rows, fields] = await Visitor.fetchById(id);
-            if (rows.length === 0) {
+            if (rows.length == 0) {
                 return res.status(404).json({ status: 404, msg: "Visitor not found!" });
             }
             res.status(200).json(rows);
@@ -47,8 +47,12 @@ const visitorController = {
                 return res.status(422).json({ errors: errors.array() });
             }
             const { username, password } = req.body;
+            const [rows] = await Visitor.fetchByUsername(username);
+            if (rows.length > 0) {
+                return res.status(409).json({ status: 409, msg: "Username is already in use." });
+            }
             const hashPassword = await bcrypt.hash(password, 10);
-            const [result, fields] = await Visitor.create(username, hashPassword);
+            const [result] = await Visitor.create(username, hashPassword);
             if (result.affectedRows === 0) {
                 return res.status(400).json({ status: 400, msg: "Visitor creation failed." });
             }

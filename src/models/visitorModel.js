@@ -7,6 +7,9 @@ const Visitor = {
     fetchById: async (id) => {
         return await conn.execute('SELECT * FROM visitors WHERE id = ?', [id]);
     },
+    fetchByUsername: async (username) => {
+        return await conn.execute('SELECT * FROM visitors WHERE username = ?', [username]);
+    },
     create: async (username, password) => {
         return await conn.execute('INSERT INTO visitors (username, password) VALUES (?, ?)', [username, password]);
     },
