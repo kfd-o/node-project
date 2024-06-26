@@ -1,7 +1,7 @@
 import { param, body } from 'express-validator'
 
 const validation = {
-    createUser: [
+    createVisitor: [
         body('username')
             .isLength({ min: 5 }).withMessage('Username must be at least 5 characters long')
             .trim()

@@ -1,14 +1,14 @@
 import conn from '../config/config.js'
-import User from '../models/userModel.js'
+import Visitor from '../models/visitorModel.js'
 import bcrypt from 'bcrypt'
 import { validationResult } from 'express-validator'
 
-const userController = {
+const visitorController = {
 
-    getAllUsers: async (req, res, next) => {
+    getAllVisitors: async (req, res, next) => {
         try {
             req.conn = await conn.getConnection();
-            const [rows, fields] = await User.fetchAll();
+            const [rows, fields] = await Visitor.fetchAll();
             res.status(200).json(rows);
         } catch (error) {
             next(error);
@@ -18,16 +18,16 @@ const userController = {
             }
         }
     },
-    getUserById: async (req, res, next) => {
+    getVisitorById: async (req, res, next) => {
         try {
             req.conn = await conn.getConnection();
             const id = parseInt(req.params.id);
             if (isNaN(id)) {
                 return res.status(400).json({ status: 400, msg: "Bad Request!" });
             }
-            const [rows, fields] = await User.fetchById(id);
+            const [rows, fields] = await Visitor.fetchById(id);
             if (rows.length === 0) {
-                return res.status(404).json({ status: 404, msg: "User not found!" })
+                return res.status(404).json({ status: 404, msg: "Visitor not found!" });
             }
             res.status(200).json(rows);
         } catch (error) {
@@ -39,7 +39,7 @@ const userController = {
         }
     },
 
-    createUser: async (req, res, next) => {
+    createVisitor: async (req, res, next) => {
         try {
             req.conn = await conn.getConnection();
             const errors = validationResult(req);
@@ -48,9 +48,9 @@ const userController = {
             }
             const { username, password } = req.body;
             const hashPassword = await bcrypt.hash(password, 10);
-            const [result, fields] = await User.create(username, hashPassword);
+            const [result, fields] = await Visitor.create(username, hashPassword);
             if (result.affectedRows === 0) {
-                return res.status(400).json({ status: 400, msg: "User creation failed." });
+                return res.status(400).json({ status: 400, msg: "Visitor creation failed." });
             }
             res.status(201).json(result);
         } catch (error) {
@@ -62,7 +62,7 @@ const userController = {
         }
     },
 
-    deleteUserById: async (req, res, next) => {
+    deleteVisitorById: async (req, res, next) => {
         try {
             req.conn = await conn.getConnection();
             const errors = validationResult(req);
@@ -70,12 +70,9 @@ const userController = {
                 return res.status(400).json({ errors: errors.array() });
             }
             const id = parseInt(req.params.id);
-            const [result, fields] = await User.deleteById(id);
+            const [result, fields] = await Visitor.deleteById(id);
             if (result.affectedRows === 0) {
-                const error = new Error();
-                error.status = 404;
-                error.message = "User not found!";
-                return next(error);
+                return res.status(404).json({ status: 404, msg: "Visitor not found." });
             }
             res.status(200).json(result);
         } catch (error) {
@@ -88,4 +85,4 @@ const userController = {
     }
 }
 
-export default userController;
+export default visitorController;
