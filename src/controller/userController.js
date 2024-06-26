@@ -1,5 +1,5 @@
 import conn from '../config/config.js'
-import User from '../models/userModels.js'
+import User from '../models/userModel.js'
 import bcrypt from 'bcrypt'
 import { validationResult } from 'express-validator'
 
