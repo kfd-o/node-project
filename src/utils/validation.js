@@ -19,7 +19,7 @@ const validation = {
             .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
             .matches(/\d/).withMessage('Password must contain a number')
             .matches(/[A-Z]/).withMessage('Password must contain an uppercase letter')
-            .matches(/[@#$%\\[\]&()]/).withMessage('Password must contain at least one of @#$%[]&()')
+            .matches(/[@#\\[\]()]/).withMessage('Password must contain at least one of @#[]()')
             .trim()
             .escape(),
     ]
