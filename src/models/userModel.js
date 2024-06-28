@@ -12,8 +12,8 @@ const User = {
         fetchByUsername: async (username) => {
             return await conn.execute('SELECT * FROM visitors WHERE username = ?', [username]);
         },
-        create: async (username, password) => {
-            return await conn.execute('INSERT INTO visitors (username, password) VALUES (?, ?)', [username, password]);
+        create: async (first_name, last_name, username, password, email, contact_num) => {
+            return await conn.execute('INSERT INTO visitors (first_name, last_name, username, password, email, contact_num) VALUES (?, ?, ?, ?, ?, ?)', [first_name, last_name, username, password, email, contact_num]);
         },
         changePassword: async (password) => {
             return await conn.execute('UPDATE visitors SET password = ? WHERE id = ?', [password, id]);
