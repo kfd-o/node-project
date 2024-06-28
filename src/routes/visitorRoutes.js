@@ -1,6 +1,6 @@
 import express from 'express'
-import visitorController from '../controller/visitorController.js';
-import authorizationMiddleware from '../middleware/authorizationMiddleware.js';
+import visitorController from '../controller/visitorController.js'
+import authorizationMiddleware from '../middleware/authorizationMiddleware.js'
 
 const router = express();
 

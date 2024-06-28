@@ -1,11 +1,13 @@
 import { param, body } from 'express-validator'
 
 const validation = {
-    signupVisitor: [
+    visitorCredentials: [
+
         body('username')
             .isLength({ min: 5 }).withMessage('Username must be at least 5 characters long')
             .trim()
             .escape(),
+
         body('password')
             .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
             .matches(/\d/).withMessage('Password must contain a number')
@@ -13,6 +15,7 @@ const validation = {
             .matches(/[@#\\[\]()]/).withMessage('Password must contain at least one of @#[]()')
             .trim()
             .escape(),
+
     ]
 };
 

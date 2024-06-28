@@ -1,9 +1,8 @@
 import express from 'express'
 import visitorRoutes from './src/routes/visitorRoutes.js'
 import authenticationRoutes from './src/routes/authenticationRoutes.js'
-import errorHandlerPageNotFoundMiddleware from './src/middleware/errorHandlerPageNotFoundMiddleware.js';
-import errorHandlerMiddleware from './src/middleware/errorHandlerMiddleware.js';
-
+import errorHandlerPageNotFoundMiddleware from './src/middleware/errorHandlerPageNotFoundMiddleware.js'
+import errorHandlerMiddleware from './src/middleware/errorHandlerMiddleware.js'
 
 const server = express();
 const PORT = process.env.S_PORT;
