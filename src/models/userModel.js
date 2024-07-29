@@ -1,5 +1,6 @@
 import conn from '../config/config.js'
 
+// GENERAL OR GLOBAL
 export const create = async (table, userData) => {
     const keys = Object.keys(userData);
     const values = Object.values(userData);
@@ -10,8 +11,13 @@ export const create = async (table, userData) => {
     return await conn.execute(sql, values);
 }
 
+export const deleteUserById = async (table, id) => {
+    const sql = `DELETE FROM ${table} WHERE id = ?`;
+    return await conn.execute(sql, [id]);
+}
+
 export const usernameExist = async (username) => {
-    const tables = [process.env.V, process.env.H, process.env.A];
+    const tables = [process.env.A, process.env.H, process.env.SP, process.env.V];
 
     for (const table of tables) {
         const sql = `SELECT * FROM ${table} WHERE username = ?`;
@@ -23,8 +29,8 @@ export const usernameExist = async (username) => {
     return false;
 }
 
-export const fetchUser = async (username) => {
-    const tables = [process.env.V, process.env.H, process.env.A];
+export const fetchUserByUsername = async (username) => {
+    const tables = [process.env.A, process.env.H, process.env.SP, process.env.V];
 
     for (const table of tables) {
         const sql = `SELECT * FROM ${table} WHERE username = ?`;
@@ -36,69 +42,127 @@ export const fetchUser = async (username) => {
     return false;
 }
 
-// const user = {
+export const changeUserPasswordByEmail = async (email, new_password) => {
+    const tables = [process.env.A, process.env.H, process.env.SP, process.env.V];
 
-//     visitor: {
-//         fetchAll: async () => {
-//             return await conn.query('SELECT * FROM visitors');
-//         },
-//         fetchById: async (id) => {
-//             return await conn.execute('SELECT * FROM visitors WHERE id = ?', [id]);
-//         },
-//         fetchByUsername: async (username) => {
-//             return await conn.execute('SELECT * FROM visitors WHERE username = ?', [username]);
-//         },
-//         create: async (first_name, last_name, username, password, email, contact_num) => {
-//             return await conn.execute('INSERT INTO visitors (first_name, last_name, username, password, email, contact_num) VALUES (?, ?, ?, ?, ?, ?)', [first_name, last_name, username, password, email, contact_num]);
-//         },
-//         changePassword: async (password) => {
-//             return await conn.execute('UPDATE visitors SET password = ? WHERE id = ?', [password, id]);
-//         },
-//         deleteById: async (id) => {
-//             return await conn.execute('DELETE FROM visitors WHERE id = ?', [id]);
-//         },
-//     },
+    for (const table of tables) {
+        const sql = `UPDATE ${table} SET password = ? WHERE email = ?`;
+        const [result] = await conn.execute(sql, [new_password, email]);
+        if (result.affectedRows > 0) {
+            return result;
+        }
+    }
 
-//     homeowner: {
-//         fetchAll: async () => {
-//             return await conn.query('SELECT * FROM homeowners');
-//         },
-//         fetchById: async (id) => {
-//             return await conn.execute('SELECT * FROM homeowners WHERE id = ?', [id]);
-//         },
-//         fetchByUsername: async (username) => {
-//             return await conn.execute('SELECT * FROM homeowners WHERE username = ?', [username]);
-//         },
-//         create: async (username, password) => {
-//             return await conn.execute('INSERT INTO homeowners (username, password) VALUES (?, ?)', [username, password]);
-//         },
-//         changePassword: async (password) => {
-//             return await conn.execute('UPDATE homeowners SET password = ? WHERE id = ?', [password, id]);
-//         },
-//         deleteById: async (id) => {
-//             return await conn.execute('DELETE FROM homeowners WHERE id = ?', [id]);
-//         },
-//     },
+    return false;
+}
 
-//     admin: {
-//         fetchAll: async () => {
-//             return await conn.query('SELECT * FROM admins');
-//         },
-//         fetchById: async (id) => {
-//             return await conn.execute('SELECT * FROM admins WHERE id = ?', [id]);
-//         },
-//         fetchByUsername: async (username) => {
-//             return await conn.execute('SELECT * FROM admins WHERE username = ?', [username]);
-//         },
-//         create: async (username, password) => {
-//             return await conn.execute('INSERT INTO admins (username, password) VALUES (?, ?)', [username, password]);
-//         },
-//         changePassword: async (password) => {
-//             return await conn.execute('UPDATE admins SET password = ? WHERE id = ?', [password, id]);
-//         },
-//         deleteById: async (id) => {
-//             return await conn.execute('DELETE FROM admins WHERE id = ?', [id]);
-//         },
-//     },
+export const fetchAllUsers = async () => {
+    const tables = [process.env.A, process.env.H, process.env.SP, process.env.V];
+    let allUsers = [];
+
+    for (const table of tables) {
+        const sql = `SELECT * FROM ${table}`;
+        const [rows] = await conn.execute(sql);
+
+        if (rows.length > 0) {
+            allUsers = allUsers.concat(rows);
+        }
+    }
+
+    return allUsers.length > 0 ? allUsers : false;
+}
+
+export const fetchUsers = async (table) => {
+    const sql = `SELECT * FROM ${table}`;
+    const [rows] = await conn.query(sql);
+    return rows;
+}
+
+export const fetchLastUser = async (table) => {
+    const sql = `SELECT * FROM ${table} ORDER BY id DESC LIMIT 1`;
+    const [rows] = await conn.execute(sql);
+    return rows[0];
+}
+
+export const fetchUserByIdAndRoute = async (id, route) => {
+    const tables = [process.env.A, process.env.H, process.env.SP, process.env.V];
+
+    for (const table of tables) {
+        const sql = `SELECT * FROM ${table} WHERE id = ? AND route = ?`;
+        const [rows] = await conn.execute(sql, [id, route]);
+
+        if (rows.length > 0) return rows[0];
+    }
+
+    return false;
+}
+
+export const requestVisit = async (requestData) => {
+    const keys = Object.keys(requestData);
+    const values = Object.values(requestData);
+    const columns = keys.join(", ");
+    const placeholder = keys.map(() => "?").join(", ");
+    const sql = `INSERT INTO ${process.env.RV} (${columns}) VALUES (${placeholder})`;
+
+    return await conn.execute(sql, values);
+}
+
+
+// ADMIN
+export const addHouse = async (model, description, bedroom, bathroom, carport, floor_area, lot_area, price, image) => {
+    const sql = 'INSERT INTO house (model, description, bedroom, bathroom, carport, floor_area, lot_area, price, img_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    return await conn.execute(sql, [model, description, bedroom, bathroom, carport, floor_area, lot_area, price, image]);
+}
+
+export const addHouseImages = async (houseId, imageUrls) => {
+    const sql = 'INSERT INTO house_images (house_id, image_url) VALUES ?';
+    const values = imageUrls.map(url => [houseId, url]);
+    return await conn.query(sql, [values]);
+};
+
+
+// HOMEOWNER
+export const fetchHomeowners = async () => {
+    const sql = 'SELECT * FROM homeowners'
+    const [rows] = await conn.query(sql);
+    return rows;
+}
+
+
+
+export const fetchLastHomeowner = async () => {
+    const sql = `SELECT * FROM visitors ORDER BY id DESC LIMIT 1`;
+    const [rows] = await conn.execute(sql);
+    return rows[0];
+};
+
+// SECURITY PERSONNEL
+export const fetchSecurityPersonnel = async () => {
+    const sql = 'SELECT * FROM visitors';
+    const [rows] = await conn.query(sql);
+    return rows;
+};
+
+export const fetchLastSecurityPersonnel = async () => {
+    const sql = `SELECT * FROM visitors ORDER BY id DESC LIMIT 1`;
+    const [rows] = await conn.execute(sql);
+    return rows[0];
+};
+
+// VISITOR
+export const fetchVisitors = async () => {
+    const sql = 'SELECT * FROM visitors';
+    const [rows] = await conn.query(sql);
+    return rows;
+};
+
+export const fetchLastVisitor = async () => {
+    const sql = `SELECT * FROM visitors ORDER BY id DESC LIMIT 1`;
+    const [rows] = await conn.execute(sql);
+    return rows[0];
+};
+
+//HOUSE
+// export const fetchHouses = async () => {
+//     const sql = 'SELECT * FROM '
 // }
-

@@ -1,7 +1,7 @@
 import { param, body } from 'express-validator'
 
-const validation = {
-    visitorCredentials: [
+const validation =
+    [
         body('first_name')
             .notEmpty().withMessage("First name is required")
             .trim(),
@@ -13,16 +13,13 @@ const validation = {
             .trim(),
         body('password')
             .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
-            .matches(/\d/).withMessage('Password must contain a number')
-            .matches(/[A-Z]/).withMessage('Password must contain an uppercase letter')
-            .matches(/[@#\\[\]()]/).withMessage('Password must contain at least one of @#[]()')
             .trim(),
         body('email')
-            .isEmail().withMessage('Invalid email address')
-            .normalizeEmail(),
+            .isEmail().withMessage('Invalid email address'),
         body('contact_num')
             .isMobilePhone('en-PH').withMessage('Invalid contact number'),
     ]
-};
+
+
 
 export default validation;
