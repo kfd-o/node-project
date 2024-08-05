@@ -6,6 +6,7 @@ const router = express.Router();
 
 
 router.get('/protected/:userType', userController.getUserData)
+// router.get('/protected/:userType/:id', userController.getUserById)
 router.get('/fetch-users', userController.getAllUsers)
 
 router.post('/protected/:userType', validation, userController.postUserData)

@@ -1,5 +1,5 @@
 const errorHandlerMiddleware = (err, req, res, next) => {
-    console.log(err);
+    console.error(err);
     return res.status(500).json({ status: 500, message: "Something went wrong!" });
 }
 

@@ -1,4 +1,4 @@
-import { usernameExist, create, fetchLastUser, fetchUsers, deleteUserById, fetchAllUsers, changeUserPasswordByEmail } from "../models/userModel.js";
+import { usernameExist, create, fetchLastUser, fetchUsers, deleteUserById, fetchAllUsers, changeUserPasswordByEmail, fetchUserById} from "../models/userModel.js";
 import { getConnection, releaseConnection } from "../utils/connection.js";
 import { validationResult } from "express-validator";
 import bcrypt from 'bcrypt';
@@ -10,6 +10,7 @@ const userController = {
     getUserData: async (req, res, next) => {
         const { userType } = req.params;
         const table = {
+            a: process.env.A,
             h: process.env.H,
             sp: process.env.SP,
             v: process.env.V,
@@ -18,7 +19,10 @@ const userController = {
         try {
             req.conn = await getConnection();
 
-            if (userType === 'homeowner') {
+            if (userType === 'admin') {
+                const admin = await fetchUsers(table.a);
+                res.status(200).json(admin);
+            }else if (userType === 'homeowner') {
                 const homeowner = await fetchUsers(table.h);
                 res.status(200).json(homeowner);
             } else if (userType === 'security-personnel') {
@@ -33,6 +37,27 @@ const userController = {
         } catch (error) {
             console.log(error)
             next(error);
+        } finally {
+            await releaseConnection(req);
+        }
+    },
+
+    getUserById: async (req, res, next) => {
+        const {userType, id} = req.params
+        const table = {
+            v: process.env.V,
+        }
+        try {
+            req.conn = await getConnection();
+            if(userType === 'visitor'){
+                const rows = await fetchUserById(table.v, id);
+                res.status(200).json(rows)
+            }else{
+                return res.status(400).json({ message: 'Invalid user type and id' });
+            } 
+        } catch (error) {
+            console.log(error)
+            next(error)
         } finally {
             await releaseConnection(req);
         }
