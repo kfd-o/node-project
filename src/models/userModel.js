@@ -113,8 +113,14 @@ export const requestVisit = async (requestData) => {
   return await conn.execute(sql, values);
 };
 
+export const homeownerNotification = async () => {
+  const sql = `INSERT INTO ${process.env.HN} (rv_id) VALUES (LAST_INSERT_ID())`;
+
+  return await conn.execute(sql);
+};
+
 export const fetchRequestVisitVisitorHomeownerId = async () => {
-  const sql = `SELECT visitor_id, homeowner_id FROM test_db.request_visit`;
+  const sql = `SELECT visitor_id, homeowner_id FROM request_visit`;
   const [rows] = await conn.execute(sql);
   return rows;
 };
@@ -124,20 +130,28 @@ export const fetchRequestVisit = async (homeownerId) => {
   const [rows] = await conn.execute(sql, [homeownerId]);
   return rows;
 };
+
+export const fetchHomeownerNotification = async (homeownerId) => {
+  const sql = `SELECT hn.*, rv.created, v.first_name, v.last_name, v.profile_color FROM homeowner_notification AS hn LEFT JOIN request_visit AS rv ON hn.rv_id = rv.id LEFT JOIN visitors AS v ON rv.visitor_id = v.id WHERE homeowner_id = ?`;
+  const [rows] = await conn.execute(sql, [homeownerId]);
+  return rows;
+};
+
 export const fetchLastRequestVisit = async (homeownerId) => {
   const sql = `SELECT rv.*, v.first_name, v.last_name, v.profile_color FROM request_visit AS rv LEFT JOIN visitors AS v ON rv.visitor_id = v.id WHERE homeowner_id = ? ORDER BY id DESC LIMIT 1`;
   const [rows] = await conn.execute(sql, [homeownerId]);
   return rows[0];
 };
+
 export const fetchRequestVisitById = async (id) => {
-  const sql = `SELECT rv.*, v.first_name, v.last_name, v.profile_color FROM request_visit AS rv  LEFT JOIN visitors AS v ON rv.visitor_id = v.id WHERE rv.id = ?`;
+  const sql = `SELECT hn.id, hn.rv_id, hn.status, rv.contact_num, rv.classify_as, rv.contract_start_date, rv.contract_end_date, rv.time_of_visit, rv.date_of_visit, v.first_name, v.last_name, v.profile_color FROM homeowner_notification AS hn LEFT JOIN request_visit AS rv ON hn.rv_id = rv.id LEFT JOIN visitors as v ON rv.visitor_id = v.id WHERE rv_id = ?`;
   const [rows] = await conn.execute(sql, [id]);
   return rows;
 };
 
 export const fetchRequestVisitCount = async (homeownerId) => {
   const sql =
-    "SELECT COUNT(*) AS count FROM request_visit WHERE homeowner_id = ? AND status = ? AND is_read = ?";
+    "SELECT COUNT(*) AS count FROM homeowner_notification AS hn LEFT JOIN request_visit AS rv ON hn.rv_id = rv.id WHERE rv.homeowner_id = ? && hn.status = ? && hn.is_read = ?";
   const [rows] = await conn.execute(sql, [homeownerId, "pending", 0]);
   return rows;
 };
@@ -149,17 +163,17 @@ export const fetchRequestVisitNewCount = async (homeownerId) => {
   return rows[0];
 };
 
-export const updateVisitRequestAsRead = async (visitorId, homeownerId) => {
-  const table = process.env.RV;
-  const sql = `UPDATE ${table} SET is_read = 1 WHERE visitor_id = ? AND homeowner_id = ? AND status = ?`;
-  const [result] = await conn.execute(sql, [visitorId, homeownerId, "pending"]);
+export const updateVisitRequestAsRead = async (homeownerId) => {
+  const table = [process.env.HN, process.env.RV];
+  const sql = `UPDATE ${table[0]} AS hn LEFT JOIN ${table[1]} as rv ON hn.rv_id = rv.id SET hn.is_read = 1 WHERE rv.homeowner_id = ? AND status = ?`;
+  const [result] = await conn.execute(sql, [homeownerId, "pending"]);
   return result;
 };
 
-export const updateVisitRequestAsApproved = async (visitorId, homeownerId) => {
-  const table = process.env.RV;
-  const sql = `UPDATE ${table} SET status = 'approved' WHERE visitor_id = ? AND homeowner_id = ?`;
-  const [result] = await conn.execute(sql, [visitorId, homeownerId]);
+export const updateVisitRequestAsApproved = async (requestVisitId) => {
+  const table = process.env.HN;
+  const sql = `UPDATE ${table} SET status = 'approved', approved_at = CURRENT_TIMESTAMP WHERE rv_id = ?`;
+  const [result] = await conn.execute(sql, [requestVisitId]);
   return result;
 };
 

@@ -8,6 +8,8 @@ import {
   fetchRequestVisitById,
   fetchLastRequestVisit,
   fetchRequestVisitVisitorHomeownerId,
+  homeownerNotification,
+  fetchHomeownerNotification,
 } from "../models/userModel.js";
 import { io } from "../../server.js";
 
@@ -51,21 +53,29 @@ const requestController = {
     try {
       req.conn = await getConnection();
 
-      const [result] = await requestVisit(requestData);
+      const [result1] = await requestVisit(requestData);
 
-      if (result.affectedRows === 0) {
+      if (result1.affectedRows === 0) {
         return res
           .status(400)
           .json({ status: 400, msg: "Request visit creation failed." });
       }
 
-      const newNotification = await fetchLastRequestVisit(homeowner_id);
-      const newNotificationCount = await fetchRequestVisitCount(homeowner_id);
+      const [result2] = await homeownerNotification(requestData);
 
-      io.emit("new-notification", newNotification);
-      io.emit("new-notification-count", newNotificationCount);
+      if (result2.affectedRows === 0) {
+        return res
+          .status(400)
+          .json({ status: 400, msg: "Request visit creation failed." });
+      }
 
-      res.status(201).json(result);
+      // const newNotification = await fetchLastRequestVisit(homeowner_id);
+      // const newNotificationCount = await fetchRequestVisitCount(homeowner_id);
+
+      // io.emit("new-notification", newNotification);
+      // io.emit("new-notification-count", newNotificationCount);
+
+      res.status(201).json([result1, result2]);
     } catch (error) {
       next(error);
     } finally {
@@ -92,13 +102,13 @@ const requestController = {
       await releaseConnection(req);
     }
   },
-  fetchRequestVisit: async (req, res, next) => {
+  fetchHomeownerNotification: async (req, res, next) => {
     const { homeownerId } = req.params;
 
     try {
       req.conn = await getConnection();
 
-      const rows = await fetchRequestVisit(homeownerId);
+      const rows = await fetchHomeownerNotification(homeownerId);
 
       if (rows.length === 0) {
         return res
@@ -159,14 +169,13 @@ const requestController = {
     }
   },
   updateRequestVisitAsRead: async (req, res, next) => {
-    const { visitorId, homeownerId } = req.params;
-    console.log(visitorId);
+    const { homeownerId } = req.params;
     console.log(homeownerId);
 
     try {
       req.conn = await getConnection();
 
-      const result = await updateVisitRequestAsRead(visitorId, homeownerId);
+      const result = await updateVisitRequestAsRead(homeownerId);
 
       if (result.affectedRows === 0) {
         return res
@@ -183,14 +192,12 @@ const requestController = {
     }
   },
   updateRequestVisitAsApproved: async (req, res, next) => {
-    const { visitorId, homeownerId } = req.params;
-    console.log(visitorId);
-    console.log(homeownerId);
+    const { requestVisitId } = req.params;
 
     try {
       req.conn = await getConnection();
 
-      const result = await updateVisitRequestAsApproved(visitorId, homeownerId);
+      const result = await updateVisitRequestAsApproved(requestVisitId);
 
       if (result.affectedRows === 0) {
         return res
